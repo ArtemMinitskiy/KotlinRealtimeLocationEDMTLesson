@@ -3,6 +3,7 @@ package com.example.artem.kotlinrealtimelocationedmtlesson
 import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
@@ -13,7 +14,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.example.artem.kotlinrealtimelocationedmtlesson.Interface.IFirebaseLoadDone
 import com.example.artem.kotlinrealtimelocationedmtlesson.Interface.IRecyclerItemClickListener
+import com.example.artem.kotlinrealtimelocationedmtlesson.Model.MyResponse
+import com.example.artem.kotlinrealtimelocationedmtlesson.Model.Request
 import com.example.artem.kotlinrealtimelocationedmtlesson.Model.User
+import com.example.artem.kotlinrealtimelocationedmtlesson.Remote.IFCMService
 import com.example.artem.kotlinrealtimelocationedmtlesson.Utils.Common
 import com.example.artem.kotlinrealtimelocationedmtlesson.ViewHolder.UserViewHolder
 import com.firebase.ui.database.FirebaseRecyclerAdapter
@@ -23,6 +27,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.mancj.materialsearchbar.MaterialSearchBar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_all_people.*
 import java.lang.StringBuilder
 
@@ -34,9 +41,12 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
     lateinit var iFirebaseLoadDone: IFirebaseLoadDone
     var suggestList: List<String> = ArrayList()
 
+    val compositeDisposable = CompositeDisposable()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_people)
+
 
         material_search_bar.setCardViewElevation(10)
         material_search_bar.addTextChangeListener(object: TextWatcher{
@@ -116,7 +126,7 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
                 //Event
                 holder.setClick(object : IRecyclerItemClickListener {
                     override fun onItemClickListenere(view: View, position: Int) {
-
+                        showDialogRequest(model)
                     }
                 })
             }
@@ -126,6 +136,81 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
         recycler_all_people.adapter = searchAdapter
 
 
+    }
+
+    private fun showDialogRequest(model: User) {
+        val alertDialog = AlertDialog.Builder(this, R.style.MyRequestDialog)
+        alertDialog.setTitle("Request Friend")
+        alertDialog.setMessage("Do you want to send request friend to" + model.email)
+        alertDialog.setIcon(R.drawable.ic_person_add_black_24dp)
+
+        alertDialog.setNegativeButton("Cancel", {dialogInterface, _ -> dialogInterface.dismiss()})
+
+        alertDialog.setPositiveButton("Send") { _, _ ->
+            val acceptList = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
+                .child(Common.loggedUser!!.uid!!)
+                .child(Common.ACCEPT_LIST)
+
+            //Check from user friend list to make sure is not friend before
+            acceptList.orderByKey().equalTo(model.uid).addListenerForSingleValueEvent(object: ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.value == null){//Not friend
+                        sendFriendRequest(model)
+                    }else {
+                        Toast.makeText(this@AllPeopleActivity, "You and " + model.email + " are friends already!)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            } )
+        }
+
+        alertDialog.show()
+    }
+
+    private fun sendFriendRequest(model: User) {
+        //Get Token to send friend request
+        val token = FirebaseDatabase.getInstance().getReference(Common.TOKENS)
+
+        token.orderByKey().equalTo(model.uid).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.value == null){//Not available token
+                    Toast.makeText(this@AllPeopleActivity, "Token error", Toast.LENGTH_SHORT).show()
+                }else {
+                    //Create request
+                    val request = Request()
+                    val dataSend = HashMap<String, String>()
+                    dataSend[Common.FROM_UID] = Common.loggedUser.uid!! // my UID
+                    dataSend[Common.FROM_EMAIL] = Common.loggedUser.email!! // my email
+                    dataSend[Common.TO_UID] = model.uid!! // my friend UID
+                    dataSend[Common.TO_EMAIL] = model.email!! // my friend email
+
+                    //Set request
+                    request.to = dataSnapshot.child(model.uid!!).getValue(String::class.java)!!
+                    request.data = dataSend
+
+                    //Send
+                    compositeDisposable.add(Common.fcmService.sendFriendRequestToUser(request)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({t: MyResponse? ->
+                            if (t!!.success == 1){
+                                Toast.makeText(this@AllPeopleActivity, "Request send", Toast.LENGTH_SHORT).show()
+                            }
+                        },{t: Throwable? ->
+                            Toast.makeText(this@AllPeopleActivity, t!!.message, Toast.LENGTH_SHORT).show()
+                        }))
+
+                }
+            }
+        })
     }
 
     private fun loadSearchData() {
@@ -172,7 +257,7 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
                 //Event
                 holder.setClick(object : IRecyclerItemClickListener {
                     override fun onItemClickListenere(view: View, position: Int) {
-
+                        showDialogRequest(model)
                     }
                 })
             }
@@ -189,6 +274,7 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
         if(searchAdapter != null){
             searchAdapter!!.stopListening()
         }
+        compositeDisposable.clear()
         super.onStop()
 
     }

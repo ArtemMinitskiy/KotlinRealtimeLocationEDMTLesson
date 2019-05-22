@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.TextView
 import com.example.artem.kotlinrealtimelocationedmtlesson.Interface.IRecyclerItemClickListener
 import com.example.artem.kotlinrealtimelocationedmtlesson.R
-import kotlinx.android.synthetic.main.layout_user.view.*
 
 class UserViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
