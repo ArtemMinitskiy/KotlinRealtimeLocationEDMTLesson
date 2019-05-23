@@ -6,6 +6,7 @@ import com.example.artem.kotlinrealtimelocationedmtlesson.Remote.RetrofitClient
 
 object Common {
 
+    val FRIEND_REQUEST: String = "FriendRequest"
     val TO_EMAIL: String = "ToEmail"
     val TO_UID: String = "ToUid"
     val FROM_EMAIL: String = "FromEmail"

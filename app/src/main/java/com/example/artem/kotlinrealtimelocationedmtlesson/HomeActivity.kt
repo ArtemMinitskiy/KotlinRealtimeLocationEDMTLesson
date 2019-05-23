@@ -55,7 +55,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(Intent(this, AllPeopleActivity::class.java))
             }
             R.id.nav_add_friend -> {
-
+                startActivity(Intent(this, FriendRequestActivity::class.java))
             }
             R.id.nav_sign_out -> {
 
