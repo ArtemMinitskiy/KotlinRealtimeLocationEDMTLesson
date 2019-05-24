@@ -3,9 +3,23 @@ package com.example.artem.kotlinrealtimelocationedmtlesson.Utils
 import com.example.artem.kotlinrealtimelocationedmtlesson.Model.User
 import com.example.artem.kotlinrealtimelocationedmtlesson.Remote.IFCMService
 import com.example.artem.kotlinrealtimelocationedmtlesson.Remote.RetrofitClient
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.*
 
 object Common {
+    fun convertTimeStampToDate(time: Long): Date {
+        return Date(Timestamp(time).time)
 
+    }
+
+    fun getFormatted(date: Date): String? {
+        return SimpleDateFormat("dd-MM-yyyy HH:mm").format(date).toString()
+
+    }
+
+    var trackingUser: User? = null
+    val PUBLIC_LOCATION: String = "PublicLocation"
     val FRIEND_REQUEST: String = "FriendRequest"
     val TO_EMAIL: String = "ToEmail"
     val TO_UID: String = "ToUid"
@@ -14,7 +28,7 @@ object Common {
     val ACCEPT_LIST: String = "acceptList"
     val USER_UID_SAVE_KEY: String = "SAVE_KEY"
     val TOKENS: String = "Tokens"
-    lateinit var loggedUser: User
+    var loggedUser: User? = null
     val USER_INFO: String = "UserInfo"
 
     val fcmService: IFCMService

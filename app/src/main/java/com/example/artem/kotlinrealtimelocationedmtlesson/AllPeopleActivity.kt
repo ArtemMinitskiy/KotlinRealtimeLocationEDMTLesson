@@ -1,9 +1,9 @@
 package com.example.artem.kotlinrealtimelocationedmtlesson
 
 import android.graphics.Typeface
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
@@ -17,7 +17,6 @@ import com.example.artem.kotlinrealtimelocationedmtlesson.Interface.IRecyclerIte
 import com.example.artem.kotlinrealtimelocationedmtlesson.Model.MyResponse
 import com.example.artem.kotlinrealtimelocationedmtlesson.Model.Request
 import com.example.artem.kotlinrealtimelocationedmtlesson.Model.User
-import com.example.artem.kotlinrealtimelocationedmtlesson.Remote.IFCMService
 import com.example.artem.kotlinrealtimelocationedmtlesson.Utils.Common
 import com.example.artem.kotlinrealtimelocationedmtlesson.ViewHolder.UserViewHolder
 import com.firebase.ui.database.FirebaseRecyclerAdapter
@@ -31,7 +30,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_all_people.*
-import java.lang.StringBuilder
 
 class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
 
@@ -135,7 +133,6 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
         searchAdapter!!.startListening()
         recycler_all_people.adapter = searchAdapter
 
-
     }
 
     private fun showDialogRequest(model: User) {
@@ -187,8 +184,8 @@ class AllPeopleActivity : AppCompatActivity(), IFirebaseLoadDone {
                     //Create request
                     val request = Request()
                     val dataSend = HashMap<String, String>()
-                    dataSend[Common.FROM_UID] = Common.loggedUser.uid!! // my UID
-                    dataSend[Common.FROM_EMAIL] = Common.loggedUser.email!! // my email
+                    dataSend[Common.FROM_UID] = Common.loggedUser!!.uid!! // my UID
+                    dataSend[Common.FROM_EMAIL] = Common.loggedUser!!.email!! // my email
                     dataSend[Common.TO_UID] = model.uid!! // my friend UID
                     dataSend[Common.TO_EMAIL] = model.email!! // my friend email
 

@@ -95,7 +95,7 @@ class FriendRequestActivity : AppCompatActivity(), IFirebaseLoadDone {
     private fun loadSearchData() {
         val lstUserEmail = ArrayList<String>()
         val userList = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
-            .child(Common.loggedUser.uid!!)
+            .child(Common.loggedUser!!.uid!!)
             .child(Common.FRIEND_REQUEST)
 
         userList.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -116,9 +116,11 @@ class FriendRequestActivity : AppCompatActivity(), IFirebaseLoadDone {
 
     private fun startSearch(search: String) {
         val query = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
-            .child(Common.loggedUser.uid!!)
+            .child(Common.loggedUser!!.uid!!)
             .child(Common.FRIEND_REQUEST)
             .orderByChild("email")
+            .startAt(search)
+
         val options = FirebaseRecyclerOptions.Builder<User>()
             .setQuery(query, User::class.java)
             .build()
@@ -152,8 +154,9 @@ class FriendRequestActivity : AppCompatActivity(), IFirebaseLoadDone {
 
     private fun loadFriendRequestList() {
         val query = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
-            .child(Common.loggedUser.uid!!)
+            .child(Common.loggedUser!!.uid!!)
             .child(Common.FRIEND_REQUEST)
+
         val options = FirebaseRecyclerOptions.Builder<User>()
             .setQuery(query, User::class.java)
             .build()
@@ -189,13 +192,13 @@ class FriendRequestActivity : AppCompatActivity(), IFirebaseLoadDone {
             .child(model.uid!!)
             .child(Common.ACCEPT_LIST)
 
-        acceptList.child(Common.loggedUser.uid!!).setValue(Common.loggedUser)
+        acceptList.child(Common.loggedUser!!.uid!!).setValue(Common.loggedUser)
 
     }
 
     private fun AddToAcceptList(model: User) {
         val acceptList = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
-            .child(Common.loggedUser.uid!!)
+            .child(Common.loggedUser!!.uid!!)
             .child(Common.ACCEPT_LIST)
 
         acceptList.child(model.uid!!).setValue(model)
@@ -204,7 +207,7 @@ class FriendRequestActivity : AppCompatActivity(), IFirebaseLoadDone {
 
     private fun deleteFriendRequest(model: User, isShowMessage: Boolean){
         val friendRequest = FirebaseDatabase.getInstance().getReference(Common.USER_INFO)
-            .child(Common.loggedUser.uid!!)
+            .child(Common.loggedUser!!.uid!!)
             .child(Common.FRIEND_REQUEST)
 
         friendRequest.child(model.uid!!).removeValue().addOnSuccessListener {
